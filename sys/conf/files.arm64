@@ -26,6 +26,7 @@ arm64/arm64/minidump_machdep.c	standard
 arm64/arm64/nexus.c		standard
 arm64/arm64/pic_if.m		standard
 arm64/arm64/pmap.c		standard
+arm64/arm64/psci.c		optional	psci
 arm64/arm64/stack_machdep.c	standard
 arm64/arm64/support.c		standard
 arm64/arm64/support_asm.S	standard

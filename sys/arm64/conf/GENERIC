@@ -105,4 +105,5 @@ device		firmware	# firmware assist module
 # Note that 'bpf' is required for DHCP.
 device		bpf		# Berkeley packet filter
 
+options 	psci		# Support for ARM PSCI
 options 	FDT

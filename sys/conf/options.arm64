@@ -1,1 +1,2 @@
 ARM64	opt_global.h
+psci	opt_platform.h

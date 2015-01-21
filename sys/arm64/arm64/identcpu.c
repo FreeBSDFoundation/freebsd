@@ -70,7 +70,7 @@ uint64_t __cpu_affinity[MAXCPU];
 #define	CPU_IMPL_INTEL		0x69
 
 #define	CPU_PART_THUNDER	0x0A1
-#define	CPU_PART_CORTEX_A57	0xD00
+#define	CPU_PART_CORTEX_A57	0xD07
 #define	CPU_PART_CORTEX_A53	0xD03
 
 #define	CPU_IMPL(midr)	(((midr) >> 24) & 0xff)
@@ -112,6 +112,7 @@ struct cpu_implementers {
 /* ARM Ltd. */
 static const struct cpu_parts cpu_parts_arm[] = {
 	{ 0xD00, "Cortex-A57" },
+	{ 0xD07, "Cortex-A57" },
 	{ 0xD03, "Cortex-A53" },
 	CPU_PART_NONE,
 };
