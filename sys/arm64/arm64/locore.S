@@ -38,6 +38,10 @@
 
 #define	VIRT_BITS	39
 
+#define MPIDR_AFF_BITS	    8
+#define MPIDR_CPU_MSK	    0xff
+#define MPIDR_CLUSTER_MSK   (MPIDR_CPU_MSK << MPIDR_AFF_BITS)
+
 	.globl	kernbase
 	.set	kernbase, KERNBASE
 
@@ -53,9 +57,20 @@
 
 	.text
 	.globl _start
+	.globl mpentry
 _start:
+mpentry:
 	/* Drop to EL1 */
 	bl	drop_to_el1
+
+	/*
+	 * Get the current CPU index. Assumes 4 CPUs/Cluster. Uses x16.
+	 */
+	mrs	x16, mpidr_el1
+
+	and	x17, x16, #MPIDR_CPU_MSK
+	ubfx	x16, x16, #(MPIDR_AFF_BITS), #(MPIDR_AFF_BITS)
+	add	x16, x17, x16, LSL #2
 
 	/* Get the virt -> phys offset */
 	bl	get_virt_delta
@@ -66,7 +81,12 @@ _start:
 	 * x28 = Our physical load address
 	 */
 
-	/* Create the page tables */
+	/*
+	 * Create the page tables - only if we're the primary CPU
+	 */
+	cmp	x16, #0
+	b.hi	1f
+
 	bl	create_pagetables
 
 	/*
@@ -74,7 +94,20 @@ _start:
 	 * x27 = TTBR0 table
 	 * x26 = TTBR1 table
 	 */
+	adr	x15, .Lttbr0
+	str	x27, [x15]
 
+	adr	x15, .Lttbr1
+	str	x26, [x15]
+
+	b	2f
+1:
+	adr	x15, .Lttbr0
+	ldr	x27, [x15]
+
+	adr	x15, .Lttbr1
+	ldr	x26, [x15]
+2:
 	/* Enable the mmu */
 	bl	start_mmu
 
@@ -84,16 +117,27 @@ _start:
 
 virtdone:
 	/* Set up the stack */
-	adr	x25, initstack_end
+	adr	x25, initstack
+
+	mov	x15,  #(PAGE_SIZE * KSTACK_PAGES)
+	madd	x25, x16, x15, x25
+	add	x25, x25, #(PAGE_SIZE * KSTACK_PAGES)
+
 	mov	sp, x25
+
+	/*
+	 * Secondaries jump ahead to init_secondary.
+	 */
+	cmp	x16, #0
+	b.hi	4f
 
 	/* Zero the BSS */
 	ldr	x15, .Lbss
 	ldr	x14, .Lend
-1:
+3:
 	str	xzr, [x15], #8
 	cmp	x15, x14
-	b.lo	1b
+	b.lo	3b
 
 	/* Backup the module pointer */
 	mov	x1, x0
@@ -112,10 +156,19 @@ virtdone:
 	str	x29, [x0, 16]	/* kern_delta */
 	str	x25, [x0, 24]	/* kern_stack */
 
-	/* Branch to C code */
+	/*
+	 * Branch to C code.
+	 */
 	bl	initarm
 	bl	mi_startup
+	b	5f
+4:
+	mov	x0, x16
+#ifdef SMP
+	bl	init_secondary
+#endif
 
+5:
 	/* We should not get here */
 	brk	0
 
@@ -126,6 +179,10 @@ virtdone:
 	.quad	__bss_start
 .Lend:
 	.quad	_end
+.Lttbr0:
+	.space	8
+.Lttbr1:
+	.space	8
 
 /*
  * If we are started in EL2, configure the required hypervisor
@@ -503,7 +560,7 @@ init_pt_va:
 
 	.align	4
 initstack:
-	.space	(PAGE_SIZE * KSTACK_PAGES)
+	.space	(PAGE_SIZE * KSTACK_PAGES * MAXCPU)
 initstack_end:
 
 

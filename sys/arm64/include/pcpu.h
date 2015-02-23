@@ -36,7 +36,9 @@
 #define	ALT_STACK_SIZE	128
 
 #define	PCPU_MD_FIELDS							\
-	char __pad[129]
+	unsigned int pc_cpu;						\
+	struct pmap *pc_curpmap;					\
+	char __pad[113]
 
 #ifdef _KERNEL
 

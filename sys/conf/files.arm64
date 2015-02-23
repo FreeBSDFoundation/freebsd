@@ -10,6 +10,8 @@ arm64/arm64/busdma_machdep.c	standard
 arm64/arm64/clock.c		standard
 arm64/arm64/copyinout.S		standard
 arm64/arm64/copystr.c		standard
+arm64/arm64/cpufunc.c		standard
+arm64/arm64/cpufunc_asm.S	standard
 arm64/arm64/dump_machdep.c	standard
 arm64/arm64/elf_machdep.c	standard
 arm64/arm64/exception.S		standard
@@ -27,6 +29,7 @@ arm64/arm64/nexus.c		standard
 arm64/arm64/pic_if.m		standard
 arm64/arm64/pmap.c		standard
 arm64/arm64/psci.c		optional	psci
+arm64/arm64/mp_machdep.c	optional	smp
 arm64/arm64/stack_machdep.c	standard
 arm64/arm64/support.c		standard
 arm64/arm64/support_asm.S	standard

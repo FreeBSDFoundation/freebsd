@@ -35,8 +35,21 @@
 
 __FBSDID("$FreeBSD$");
 
+#define MPIDR_CPU_MSK	    0xff
+
+#define GET_PCPU(tmp, tmp2) \
+	mrs	tmp, mpidr_el1;		    \
+	and	tmp, tmp, #MPIDR_CPU_MSK;   \
+	adr	tmp2, .Lcurpcpusz;	    \
+	ldr	tmp2, [tmp2];		    \
+	mul	tmp, tmp, tmp2;		    \
+	adr	tmp2, .Lcurpcpu;	    \
+	ldr	tmp2, [tmp2];		    \
+	add	tmp, tmp, tmp2
+
 .Lcurpcpu:
 	.quad	_C_LABEL(__pcpu)
+.Lcurpcpusz:
 	.quad	PCPU_SIZE
 
 /*
@@ -44,7 +57,9 @@ __FBSDID("$FreeBSD$");
  */
 ENTRY(cpu_throw)
 #ifdef SMP
+#if 0
 #error cpu_throw needs to be ported to support SMP
+#endif
 #endif
 
 #ifdef VFP
@@ -55,8 +70,7 @@ ENTRY(cpu_throw)
 #endif
 
 	/* Load the PCPU area */
-	/* TODO: Adjust for the core we are on */
-	ldr	x3, .Lcurpcpu
+	GET_PCPU(x3, x4)
 
 	/* Store the new curthread */
 	str	x1, [x3, #PC_CURTHREAD]
@@ -110,12 +124,13 @@ END(cpu_throw)
  */
 ENTRY(cpu_switch)
 #ifdef SMP
+#if 0
 #error cpu_switch needs to be ported to support SMP
+#endif
 #endif
 
 	/* Load the PCPU area */
-	/* TODO: Adjust for the core we are on */
-	ldr	x3, .Lcurpcpu
+	GET_PCPU(x3, x4)
 
 	/* Store the new curthread */
 	str	x1, [x3, #PC_CURTHREAD]
@@ -181,7 +196,9 @@ ENTRY(cpu_switch)
 	/* Release the old thread */
 	str	x2, [x0, #TD_LOCK]
 #if defined(SCHED_ULE) && defined(SMP)
+#if 0
 #error We may need to wait for the lock here
+#endif
 #endif
 
 	/* Restore the registers */

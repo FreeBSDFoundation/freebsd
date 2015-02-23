@@ -165,7 +165,6 @@ arm_gic_probe(device_t dev)
 	return (BUS_PROBE_DEFAULT);
 }
 
-#if 0
 static void
 arm_gic_init_secondary(device_t dev)
 {
@@ -241,7 +240,6 @@ gic_decode_fdt(uint32_t iparent, uint32_t *intr, int *interrupt,
 	}
 	return (0);
 }
-#endif
 
 static int
 arm_gic_attach(device_t dev)
@@ -364,7 +362,6 @@ gic_eoi(device_t dev, u_int irq)
 	gic_c_write_4(sc, GICC_EOIR, irq);
 }
 
-#if 0
 static int
 arm_gic_next_irq(struct arm_gic_softc *sc, int last_irq)
 {
@@ -389,7 +386,6 @@ arm_gic_next_irq(struct arm_gic_softc *sc, int last_irq)
 
 	return active_irq;
 }
-#endif
 
 void
 gic_mask_irq(device_t dev, u_int irq)
@@ -413,7 +409,6 @@ gic_unmask_irq(device_t dev, u_int irq)
 	gic_d_write_4(sc, GICD_ISENABLER(irq >> 5), (1UL << (irq & 0x1F)));
 }
 
-#if 0
 static int
 arm_gic_config(device_t dev, int irq, enum intr_trigger trig,
     enum intr_polarity pol)
@@ -481,12 +476,13 @@ arm_gic_unmask(device_t dev, int irq)
 {
 	struct arm_gic_softc *sc = device_get_softc(dev);
 
+	/* TODO: Get working on arm64 */
+#if 0
 	if (irq > GIC_LAST_IPI)
 		arm_irq_memory_barrier(irq);
-
+#endif
 	gic_d_write_4(sc, GICD_ISENABLER(irq >> 5), (1UL << (irq & 0x1F)));
 }
-#endif
 
 #ifdef SMP
 static void
@@ -526,15 +522,18 @@ arm_gic_ipi_clear(device_t dev, int ipi)
 }
 #endif
 
-#if 0
 static void
 gic_post_filter(void *arg)
 {
 	struct arm_gic_softc *sc = arm_gic_sc;
 	uintptr_t irq = (uintptr_t) arg;
 
+	/* TODO: Get working on arm64 */
+#if 0
 	if (irq > GIC_LAST_IPI)
 		arm_irq_memory_barrier(irq);
+#endif
+
 	gic_c_write_4(sc, GICC_EOIR, irq);
 }
 
@@ -594,7 +593,6 @@ pic_ipi_clear(int ipi)
 
 	arm_gic_ipi_clear(arm_gic_sc->gic_dev, ipi);
 }
-#endif
 #endif
 
 static device_method_t arm_gic_methods[] = {

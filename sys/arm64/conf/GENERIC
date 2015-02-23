@@ -108,3 +108,6 @@ device		bpf		# Berkeley packet filter
 
 device		psci		# Support for ARM PSCI
 options 	FDT
+options 	SMP			# Enable multiple cores
+options 	IPI_IRQ_START=0
+options 	IPI_IRQ_END=15

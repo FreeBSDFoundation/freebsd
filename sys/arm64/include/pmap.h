@@ -51,6 +51,7 @@
 #ifndef LOCORE
 
 #include <sys/queue.h>
+#include <sys/_cpuset.h>
 #include <sys/_lock.h>
 #include <sys/_mutex.h>
 
@@ -89,6 +90,8 @@ struct pmap {
 	struct mtx		pm_mtx;
 	struct pmap_statistics	pm_stats;	/* pmap statictics */
 	pd_entry_t		*pm_l1;
+	cpuset_t		pm_active;	/* active on cpus */
+	cpuset_t		pm_save;	/* Context valid on cpus mask */
 	TAILQ_HEAD(,pv_chunk)	pm_pvchunk;	/* list of mappings in pmap */
 };
 

@@ -95,6 +95,7 @@ long realmem = 0;
 #define	PHYSMAP_SIZE	(2 * (VM_PHYSSEG_MAX - 1))
 vm_paddr_t physmap[PHYSMAP_SIZE];
 u_int physmap_idx;
+vm_paddr_t pmap_pa;
 
 struct kva_md_info kmi;
 
@@ -310,6 +311,13 @@ cpu_idle(int busy)
 	if (!busy)
 		cpu_activeclock();
 	spinlock_exit();
+}
+
+int
+cpu_idle_wakeup(int cpu)
+{
+
+	return (0);
 }
 
 void
@@ -727,6 +735,8 @@ initarm(struct arm64_bootparams *abp)
 
 	printf("In initarm on arm64\n");
 
+	set_cpufuncs();
+
 	/* Set the module data location */
 	preload_metadata = (caddr_t)(uintptr_t)(abp->modulep);
 
@@ -763,6 +773,9 @@ initarm(struct arm64_bootparams *abp)
 	set_curthread(&thread0);
 	pcpu_init(pcpup, 0, sizeof(struct pcpu));
 	PCPU_SET(curthread, &thread0);
+
+	/* Needed for secondary init. */
+	pmap_pa = abp->kern_l1pt;
 
 	/* Do basic tuning, hz etc */
 	init_param1();

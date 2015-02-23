@@ -33,11 +33,19 @@ int	arm_config_intr(u_int, enum intr_trigger, enum intr_polarity);
 void	arm_cpu_intr(struct trapframe *);
 void	arm_dispatch_intr(u_int, struct trapframe *);
 int	arm_enable_intr(void);
-void	arm_mask_irq(u_int);
+int	arm_get_next_irq(int);
+void	arm_mask_irq(uintptr_t);
 void	arm_register_pic(device_t, u_int);
 int	arm_setup_intr(const char *, driver_filter_t *, driver_intr_t,
 				void *, u_int, enum intr_type, void **);
 int	arm_teardown_intr(void *);
-void	arm_unmask_irq(u_int);
+void	arm_unmask_irq(uintptr_t);
 
+void arm_irq_memory_barrier(uintptr_t);
+
+void arm_init_secondary_ic(void);
+void arm_irq_memory_barrier(uintptr_t);
+
+int  gic_decode_fdt(uint32_t iparentnode, uint32_t *intrcells, int *interrupt,
+    int *trig, int *pol);
 #endif	/* _MACHINE_INTR_H */

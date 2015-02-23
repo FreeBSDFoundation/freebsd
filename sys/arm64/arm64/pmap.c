@@ -1804,6 +1804,7 @@ pmap_qenter(vm_offset_t sva, vm_page_t *ma, int count)
 	vm_page_t m;
 	int i;
 
+	/* FIXME: PMAP_LOCK ? */
 	va = sva;
 	for (i = 0; i < count; i++) {
 		m = ma[i];
@@ -1826,6 +1827,7 @@ pmap_qremove(vm_offset_t sva, int count)
 {
 	vm_offset_t va;
 
+	/* FIXME: PMAP_LOCK ? */
 	va = sva;
 	while (count-- > 0) {
 		KASSERT(va >= VM_MIN_KERNEL_ADDRESS, ("usermode va %lx", va));
@@ -6195,15 +6197,15 @@ retry:
 #endif
 }
 
+/* FIXME: SMP fixups here ? */
 void
 pmap_activate(struct thread *td)
 {
-	pmap_t	pmap; //, oldpmap;
-	//u_int	cpuid;
+	pmap_t	pmap, oldpmap;
+	u_int	cpuid;
 
 	critical_enter();
 	pmap = vmspace_pmap(td->td_proc->p_vmspace);
-#if 0
 	oldpmap = PCPU_GET(curpmap);
 	cpuid = PCPU_GET(cpuid);
 #ifdef SMP
@@ -6215,13 +6217,12 @@ pmap_activate(struct thread *td)
 	CPU_SET(cpuid, &pmap->pm_active);
 	CPU_SET(cpuid, &pmap->pm_save);
 #endif
-#endif
 	td->td_pcb->pcb_l1addr = vtophys(pmap->pm_l1);
 	__asm __volatile("msr ttbr0_el1, %0" : : "r"(td->td_pcb->pcb_l1addr));
 #if 0
 	load_cr3(pmap->pm_cr3);
-	PCPU_SET(curpmap, pmap);
 #endif
+	PCPU_SET(curpmap, pmap);
 	critical_exit();
 }
 
